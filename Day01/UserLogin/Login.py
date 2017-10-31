@@ -26,6 +26,7 @@ while not isLock:
                 break
     if not isOk:
         times+=1
+
     if times==3:
         with open('users.txt', 'w+', encoding='utf-8') as f:
             for line in f.readlines():
