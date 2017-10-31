@@ -46,6 +46,7 @@ while not isLock:
         sys.exit()
     else:
         times += 1
+     # 提示警告信息
     if times == 2:
         print("您好，请仔细输入，您还有最后一次输入密码的机会，否则系统将锁定该用户！")
 
