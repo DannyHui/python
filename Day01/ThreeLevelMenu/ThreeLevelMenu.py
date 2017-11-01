@@ -37,27 +37,33 @@ data={
         '东莞' : ['莞城','长安','虎门','万江','大朗']
     }
 }
-print("按键提醒：\n‘r’表示返回上一级菜单；\n‘q’表示退出程序；")
+print("输入提醒：\n‘r’表示返回上一级菜单；\n‘q’表示退出程序；")
+# 存储当前菜单的上一级数据
 listMenu=[]
 while True:
     for key in data:
         print(key)
     choice = input("请选择进入：").strip()
     if choice in data:
-        # 当前菜单数据存储起来，方便返回上一级使用
+        # 当data数据为list类型时，已到达最下级菜单
+        if type(data) == list:
+            print("您已进入最下级菜单，请返回上一级菜单！")
+            continue
+        # 选择菜单同级的数据保存到列表listMenu，返回上一级使用
         listMenu.append(data)
-        # 获取选择菜单的数据项
+        # 获取选择菜单的下一级
         data=data[choice]
     elif choice == "r":
-        # 当列表空的时候，就是退出大循环的时候
+        # 当列表listMenu为空时，已到达最上级菜单
         if len(listMenu) == 0:
-            break
-        # 获取上一级菜单的数据项
+            print("您已抵达最上级菜单，请选择菜单进入！")
+            continue
+        # 获取上一级菜单的数据
         data=listMenu[-1]
-        # 删除列表最后一个元素，
+        # 删除菜单数据列表listMenu的最后一个元素
         listMenu.pop()
     elif choice == "q":
-        sys.exit()
+        exit()
     else:
         print("输入错误，请您重新输入！")
         continue
