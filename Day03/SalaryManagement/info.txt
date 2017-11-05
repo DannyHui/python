@@ -1,0 +1,4 @@
+Alex 10000
+Rain 80000
+Egon 50000
+Yuan 30000
