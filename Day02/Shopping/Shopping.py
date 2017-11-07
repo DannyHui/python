@@ -11,35 +11,75 @@
 # Author ： Danny
 # date： 2017/11/2
 # -------------------------------
-# import json
-# # 读取菜单文件的数据
-# with open("test.json","r",encoding="utf-8") as f:
-#     data = json.load(f)
-# print(data)
 import json
+# 用户信息文件
+userFileName='users.json'
+# 用户信息数组
+users=[]
+# 读取用户信息文件
+def ReadUserFile():
+    with open(userFileName, 'r', encoding='utf-8') as f:
+        users = json.load(f)
+# 写入用户信息文件
+def WriteUserFile():
+    with open(userFileName,'w',encoding='utf-8') as f1:
+        json.dump(users, f1, ensure_ascii=False)
+#添加用户信息
+def InsertUser(name,pwd):
+    ReadUserFile()
+    userInfo = {'name': name, 'pwd': pwd, 'amount': 0}
+    users.append(userInfo)
+    WriteUserFile()
+# 修改用户工资
+def UpdateUserAmount(name,amount):
+    ReadUserFile()
+    for u_dict in users:
+        if u_dict["name"] == name:
+            u_dict["amount"] = amount
+            WriteUserFile()
+            break
+# 检查用户是否存在
+def IsExistUserName(name):
+    ReadUserFile()
+    isExist = False
+    for u_dict in users:
+        if u_dict["name"] == name:
+            isExist = True
+    return isExist
+# 检查用户名和密码是否正确
+def CheckUserNamePwd(name,pwd):
+    ReadUserFile()
+    isExist = False
+    for u_dict in users:
+        if u_dict["name"] == name and u_dict["pwd"] == pwd:
+            isExist = True
+    return isExist
+while True:
+    str_welcome = "欢迎进入购物系统"
+    print(str_welcome.center(30,'*'))
+    userName=input("请输入用户名：")
+    userPwd=input("请输入密码：")
+    if IsExistUserName(userName):
+        while not CheckUserNamePwd(userName,userPwd):
+            userPwd = input("请输入密码：")
+        else:
+            print("登录成功")
+    else:
+        InsertUser(userName,userPwd)
+        while True:
+            amount = input("请输入工资：")
+            if not amount.isdigit():
+                print("工资必须为数字,请重新输入！")
+                continue
+            else:
+                print("合法")
 
-# 写入购物车用户数据
-with open('users.json','w',encoding='utf-8') as f:
-    data=[]
-    for s in range(1 ,6):
-        data1={'name':'test00'+str(s),'pwd':'123456','amount':1000,'balance':1000}
-        data.append(data1)
-    json.dump(data, f, ensure_ascii=False)
 
-# 写入购物车用户数据
-with open('products.json','w',encoding='utf-8') as f:
-    data=[]
-    for s in range(1 ,6):
-        data1={'name':'test00'+str(s),'price':1000}
-        data.append(data1)
-    json.dump(data, f, ensure_ascii=False)
 
-# data1 = {'name':'john',"age":12}
-# data2 = {'name':'merry',"age":13}
-# data = [data1,data2]
-# print(data)
-#
-# file.close()
-# file = open('test.json','r',encoding='utf-8')
-# s = json.load(file)
-# print (s[0]['name'])
+
+
+
+
+
+
+
