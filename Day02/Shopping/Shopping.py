@@ -12,35 +12,38 @@
 # date： 2017/11/2
 # -------------------------------
 import json
+import time
+
 # 用户信息文件
 userFileName='users.json'
 productFileName='products.json'
-# 读取用户信息文件
-def ReadUserFile():
-    with open(userFileName, 'r', encoding='utf-8') as f:
-        users = json.load(f)
-    return users
-# 写入用户信息文件
-def WriteUserFile(users):
-    with open(userFileName,'w',encoding='utf-8') as f1:
-        json.dump(users, f1, ensure_ascii=False)
+shoppingFileName='shoppingSheets.json'
+# 读取文件
+def ReadFile(fileName):
+    with open(fileName, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    return data
+# 写入文件
+def WriteFile(fileName,data):
+    with open(fileName,'w',encoding='utf-8') as f1:
+        json.dump(data, f1, ensure_ascii=False)
 #添加用户信息
 def InsertUser(name,pwd):
-    users=ReadUserFile()
+    users=ReadFile(userFileName)
     userInfo = {'name': name, 'pwd': pwd, 'amount': 0}
     users.append(userInfo)
-    WriteUserFile(users)
+    WriteFile(userFileName, users)
 # 修改用户工资
 def UpdateUserAmount(name,amount):
-    users = ReadUserFile()
+    users = ReadFile(userFileName)
     for u_dict in users:
         if u_dict["name"] == name:
             u_dict["amount"] = amount
-            WriteUserFile(users)
+            WriteFile(userFileName, users)
             break
 # 查询用户余额
 def GetUserAmount(name):
-    users = ReadUserFile()
+    users = ReadFile(userFileName)
     for u_dict in users:
         if u_dict["name"] == name:
             amount = u_dict["amount"]
@@ -48,7 +51,7 @@ def GetUserAmount(name):
     return amount
 # 检查用户是否存在
 def IsExistUserName(name):
-    users = ReadUserFile()
+    users = ReadFile(userFileName)
     isExist = False
     for u_dict in users:
         if u_dict["name"] == name:
@@ -56,18 +59,42 @@ def IsExistUserName(name):
     return isExist
 # 检查用户名和密码是否正确
 def CheckUserNamePwd(name,pwd):
-    users = ReadUserFile()
+    users = ReadFile(userFileName)
     isExist = False
     for u_dict in users:
         if u_dict["name"] == name and u_dict["pwd"] == pwd:
             isExist = True
     return isExist
 # 获取用户消费记录
+def GetUserShoppingSheet(name):
+    shoppingSheets=ReadFile(shoppingFileName)
+    str_sheet = "消费记录清单"
+    print(str_sheet.center(40, '*'))
+    if name in shoppingSheets:
+        sheets = shoppingSheets[name]
+        print('%-5s %-15s %-10s %-10s' % ('序号', '商品名称', '商品价格(元)','购买时间'))
+        for index, item in enumerate(sheets):
+            print('%-8d %-20s %-10d %-10s' % (index + 1, item['name'], item['price'],item['buytime']))
+    else:
+        print("您没有任何消费记录！")
+# 保存用户消费记录
+def SaveUserShoppingSheet(name,productName,price):
+    sheets = ReadFile(shoppingFileName)
+    shoppingSheet = {'name': productName, 'price': price, 'buytime': time.strftime("%Y-%m-%d %H:%M:%S")}
+    if name in sheets:
+        sheets[name].append(shoppingSheet)
+    else:
+        sheets[name]=[shoppingSheet]
+    WriteFile(shoppingFileName,sheets)
 
 # 获取商品列表
-def ReadProductFile():
-    with open(productFileName, 'r', encoding='utf-8') as f2:
-        products = json.load(f2)
+def GetProductList():
+    products = ReadFile(productFileName)
+    str_product = "商品列表"
+    print(str_product.center(40, '*'))
+    print('%-5s %-15s %-10s' % ('编号', '商品名称', '商品价格(元)'))
+    for index, item in enumerate(products):
+        print('%-8d %-20s %-10d' % (index + 1, item['name'], item['price']))
     return products
 
 
@@ -102,15 +129,17 @@ while True:
         isShow=input("是否显示消费记录(Y/N)：").strip()
         if isShow=="Y":
             # 显示消费记录
-            print("显示消费记录")
-        else:
-            # 显示商品列表
-            str_product = "商品列表"
-            print(str_product.center(40, '*'))
-            print('%-5s %-15s %-10s' % ('编号', '商品名称', '商品价格(元)'))
-            products = ReadProductFile()
-            for index, item in enumerate(products):
-                print('%-8d %-20s %-10d' % (index + 1, item['name'], item['price']))
+            GetUserShoppingSheet(userName)
+        # 显示商品列表
+        productList = GetProductList()
+        print("请选择购买商品的编号：")
+        # 获取选择商品 名称 和价格
+
+        # 判断余额是否足够
+
+        # 保存购买记录
+
+        # 修改用户余额
 
 
 
