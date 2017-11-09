@@ -104,48 +104,54 @@ def GetProductInfo(products,code):
             return (item["name"],item["price"])
 
 # 检查商品编号是否合法
-def CheckProductCode(products,code)
+def CheckProductCode(products,code):
     isCheck=False
     if code.isdigit():
         if int(code)<=products.count() and int(code)>0:
             isCheck=True
     return  isCheck
 
-while True:
-    str_welcome = "欢迎进入购物系统"
-    print(str_welcome.center(30,'*'))
-    userName=input("请输入用户名：").strip()
-    userPwd=input("请输入密码：")
-    isLogin=False
-    if IsExistUserName(userName):
-        while not CheckUserNamePwd(userName,userPwd):
-            print("密码错误，请重新输入！")
-            userPwd = input("请输入密码：")
-        else:
-            isLogin=True
+str_welcome = "欢迎进入购物系统"
+print(str_welcome.center(30,'*'))
+userName=input("请输入用户名：").strip()
+userPwd=input("请输入密码：")
+isLogin=False
+if IsExistUserName(userName):
+    while not CheckUserNamePwd(userName,userPwd):
+        print("密码错误，请重新输入！")
+        userPwd = input("请输入密码：")
     else:
-        InsertUser(userName,userPwd)
-        while True:
-            userAmount = input("请输入工资：")
-            if not userAmount.isdigit():
-                print("工资必须为数字,请重新输入！")
-                continue
-            else:
-                UpdateUserAmount(userName,userAmount)
-                isLogin = True
-                break
-    if isLogin:
-        amount = GetUserAmount(userName)
-        print("您的账户余额：\033[31;1m{_amount}\033[0m".format(_amount=amount))
-        # 是否显示消费记录
-        isShow=input("是否显示消费记录(Y/N)：").strip()
-        if isShow=="Y":
+        isLogin=True
+else:
+    InsertUser(userName,userPwd)
+    while True:
+        userAmount = input("请输入工资：")
+        if not userAmount.isdigit():
+            print("工资必须为数字,请重新输入！")
+            continue
+        else:
+            UpdateUserAmount(userName,userAmount)
+            isLogin = True
+            break
+if isLogin:
+    amount = GetUserAmount(userName)
+    print("您的账户余额：\033[31;1m{_amount}\033[0m".format(_amount=amount))
+    # 是否显示消费记录
+    isShow=input("是否显示消费记录(Y/N)| 退出(q)：").strip()
+    if isShow.lower()=="q":
+        # 显示购买记录
+        GetUserShoppingSheet(userName)
+    else:
+        if isShow.lower()=="y":
             # 显示消费记录
             GetUserShoppingSheet(userName)
         while True:
             # 显示商品列表
             productList = GetProductList()
-            code = input("请选择购买商品的编号：").strip()
+            code = input("请选择购买商品的编号| 退出(q)：").strip()
+            if code.lower() == "q":
+                GetUserShoppingSheet(userName)
+                break
             # 检查商品编号是否合法
             if not CheckProductCode(productList,code):
                 print("商品编号输入不合法，请重新输入！")
@@ -158,16 +164,16 @@ while True:
                 # 判断余额是否足够
                 if amount<productPrice:
                     print("您的余额不足，请选择其它商品！")
+                    continue
                 else:
                     # 保存购买记录
                     SaveUserShoppingSheet(userName,productName,productPrice)
                     # 修改用户余额
                     UpdateUserAmount(userName,amount-productPrice)
-                    print("购买成功！")
-
-
-
-
-
-
-
+                    isShop=input("您已购买成功，是否继续购买(Y/N)| 退出(q)：").strip()
+                    if isShop.lower()=="y":
+                        continue
+                    else:
+                        GetUserShoppingSheet(userName)
+                        break
+     exit("欢迎下次光临！")
