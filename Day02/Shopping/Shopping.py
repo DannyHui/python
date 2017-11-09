@@ -97,7 +97,19 @@ def GetProductList():
         print('%-8d %-20s %-10d' % (index + 1, item['name'], item['price']))
     return products
 
+# 获取商品名称和价格
+def GetProductInfo(products,code):
+    for index,item in enumerate(products):
+        if index+1==code:
+            return (item["name"],item["price"])
 
+# 检查商品编号是否合法
+def CheckProductCode(products,code)
+    isCheck=False
+    if code.isdigit():
+        if int(code)<=products.count() and int(code)>0:
+            isCheck=True
+    return  isCheck
 
 while True:
     str_welcome = "欢迎进入购物系统"
@@ -130,21 +142,28 @@ while True:
         if isShow=="Y":
             # 显示消费记录
             GetUserShoppingSheet(userName)
-        # 显示商品列表
-        productList = GetProductList()
-        print("请选择购买商品的编号：")
-        # 获取选择商品 名称 和价格
-
-        # 判断余额是否足够
-
-        # 保存购买记录
-
-        # 修改用户余额
-
-
-
-
-
+        while True:
+            # 显示商品列表
+            productList = GetProductList()
+            code = input("请选择购买商品的编号：").strip()
+            # 检查商品编号是否合法
+            if not CheckProductCode(productList,code):
+                print("商品编号输入不合法，请重新输入！")
+                continue
+            else:
+                # 获取选择商品 名称 和价格
+                product=GetProductInfo(productList,code)
+                productName=product[0]
+                productPrice=product[1]
+                # 判断余额是否足够
+                if amount<productPrice:
+                    print("您的余额不足，请选择其它商品！")
+                else:
+                    # 保存购买记录
+                    SaveUserShoppingSheet(userName,productName,productPrice)
+                    # 修改用户余额
+                    UpdateUserAmount(userName,amount-productPrice)
+                    print("购买成功！")
 
 
 
