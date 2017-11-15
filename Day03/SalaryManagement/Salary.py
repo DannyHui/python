@@ -52,23 +52,15 @@ def CheckUserInput(user_info):
             print("工资必须为数字，请重新输入！")
     return  isCheck
 
-users=[]
-# 读取用户信息文件
-def ReadUserFile():
-    with open('users.json', 'r', encoding='utf-8') as f:
-        users = json.load(f)
-# 写入用户信息文件
+
 # 工资管理程序
 while True:
     # 打印用户提示信息
-    print(msg);
+    print(msg)
     action=input("\033[31;1m请输入操作选项>>：\033[0m")
     if action.isdigit():
         # 获取用户信息
         InitUserInfo()
-        print(info_dict)
-        ReadUserFile()
-        print(users)
         if int(action) == 1:
             while True:
                 name = input("请输入要查询的员工姓名（例如：Alex）:")
