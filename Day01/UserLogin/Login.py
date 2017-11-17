@@ -3,11 +3,11 @@ import sys
 # 用户是否锁定
 isLock = False
 # 用户是否存在
-isExist=False
+isExist = False
 # 用户名和密码是否验证正确
 isOk = False
 # 输入密码的次数
-times=0
+times = 0
 while not isLock:
     if not isExist:
         name = input("请输入用户名：")
@@ -46,22 +46,22 @@ while not isLock:
         sys.exit()
     else:
         times += 1
-     # 提示警告信息
+        # 提示警告信息
     if times == 2:
         print("您好，请仔细输入，您还有最后一次输入密码的机会，否则系统将锁定该用户！")
 
     # 输入密码错误3次，锁定该用户
     if times == 3:
         # 将文件读取到内存中
-        with open("users.txt","r",encoding="utf-8") as f3:
+        with open("users.txt", "r", encoding="utf-8") as f3:
             lines = f3.readlines()
         # 写的方式打开文件
-        with open("users.txt","w",encoding="utf-8") as f4:
+        with open("users.txt", "w", encoding="utf-8") as f4:
             for line in lines:
                 _name = line.split('/')[0]
                 if _name == name:
-                    #替换
+                    # 替换
                     old_str = line.strip()
-                    new_str = line[:-2]+"1"
-                    line = line.replace(old_str,new_str)
+                    new_str = line[:-2] + "1"
+                    line = line.replace(old_str, new_str)
                 f4.write(line)

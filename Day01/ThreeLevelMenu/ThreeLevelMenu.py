@@ -9,12 +9,13 @@
 # date： 2017/10/31
 # -------------------------------
 import json
+
 # 读取菜单文件的数据
-with open("menu.json","r",encoding="utf-8") as f:
+with open("menu.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 print("输入提醒：\n‘r’表示返回上一级菜单；\n‘q’表示退出程序；")
 # 存储当前菜单的上一级数据
-listMenu=[]
+listMenu = []
 while True:
     for key in data:
         print(key)
@@ -27,14 +28,14 @@ while True:
         # 选择菜单同级的数据保存到列表listMenu，返回上一级使用
         listMenu.append(data)
         # 获取选择菜单的下一级
-        data=data[choice]
+        data = data[choice]
     elif choice == "r":
         # 当列表listMenu为空时，已到达最上级菜单
         if len(listMenu) == 0:
             print("您已抵达最上级菜单，请选择菜单进入！")
             continue
         # 获取上一级菜单的数据
-        data=listMenu[-1]
+        data = listMenu[-1]
         # 删除菜单数据列表listMenu的最后一个元素
         listMenu.pop()
     elif choice == "q":

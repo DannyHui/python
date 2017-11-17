@@ -24,15 +24,17 @@ shoppingFileName = 'shoppingSheets.json'
 def ReadFile(fileName):
     with open(fileName, 'r', encoding='utf-8') as f:
         data = ""
-        if str(f.read(1)).strip()!="":
+        if str(f.read(1)).strip() != "":
             f.seek(0)
             data = json.load(f)
     return data
+
 
 # 写入文件
 def WriteFile(fileName, data):
     with open(fileName, 'w', encoding='utf-8') as f1:
         json.dump(data, f1, ensure_ascii=False)
+
 
 # 添加用户信息
 def InsertUser(name, pwd):
@@ -42,6 +44,7 @@ def InsertUser(name, pwd):
     userInfo = {'name': name, 'pwd': pwd, 'amount': 0}
     users.append(userInfo)
     WriteFile(userFileName, users)
+
 
 # 修改用户工资
 def UpdateUserAmount(name, amount):
@@ -99,11 +102,12 @@ def GetUserShoppingSheet(name):
     else:
         print("您没有消费记录，请在商品列表中进行购买！")
 
+
 # 保存用户消费记录
 def SaveUserShoppingSheet(name, productName, price):
     sheets = ReadFile(shoppingFileName)
-    if sheets=="":
-        sheets={}
+    if sheets == "":
+        sheets = {}
     shoppingSheet = {'name': productName, 'price': price, 'buytime': time.strftime("%Y-%m-%d %H:%M:%S")}
     if name in sheets:
         sheets[name].append(shoppingSheet)
@@ -141,6 +145,7 @@ def ShowBuyList(buyProducts, userName):
         for product in buyProducts:
             print("\033[32;1m{_product}\033[0m".format(_product=product))
     print("您的账户余额：\033[31;1m{_amount}\033[0m".format(_amount=amount))
+
 
 # 程序启动
 str_welcome = "欢迎进入购物系统"
@@ -183,7 +188,7 @@ if isLogin:
             ShowBuyList(buyProducts, userName)
             break
         # 检查商品编号是否合法
-        if not code.isdigit() or int(code) not in range(1, len(productList)+1):
+        if not code.isdigit() or int(code) not in range(1, len(productList) + 1):
             print("商品编号输入不合法，请重新输入！")
             continue
         else:

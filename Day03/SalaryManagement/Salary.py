@@ -9,6 +9,7 @@
 # date： 2017/11/5
 # -------------------------------
 import json
+
 # 用户提示信息
 msg = '''
 1. 查询员工工资
@@ -20,27 +21,34 @@ msg = '''
 filename = 'info.txt'
 
 # 员工信息数据
-info_dict={}
+info_dict = {}
+
 
 # 读取用户信息
 def InitUserInfo():
     with open(filename, 'r', encoding='utf-8') as f:
         for line in f:
             if not line.startswith('\n'):
-                line=line.strip()
-                info_dict[line.split(' ')[0]]=line.split(' ')[1]
+                line = line.strip()
+                info_dict[line.split(' ')[0]] = line.split(' ')[1]
+
+
 # 检查用户是否存在
 def IsExistUser(name):
-    isExist=False
+    isExist = False
     if name in info_dict:
         isExist = True
-    return  isExist
+    return isExist
+
+
 # 获取用户工资
 def GetUserSalary(name):
     return info_dict.get(name)
+
+
 # 检查用户输入是否合法
 def CheckUserInput(user_info):
-    isCheck=True
+    isCheck = True
     if len(user_info.split(' ')) != 2:
         isCheck = False
         print("格式输入错误，请重新输入！")
@@ -50,14 +58,14 @@ def CheckUserInput(user_info):
         if not salary.isdigit():
             isCheck = False
             print("工资必须为数字，请重新输入！")
-    return  isCheck
+    return isCheck
 
 
 # 工资管理程序
 while True:
     # 打印用户提示信息
     print(msg)
-    action=input("\033[31;1m请输入操作选项>>：\033[0m")
+    action = input("\033[31;1m请输入操作选项>>：\033[0m")
     if action.isdigit():
         # 获取用户信息
         InitUserInfo()
@@ -68,7 +76,7 @@ while True:
                 isExist = IsExistUser(name)
                 if isExist:
                     # 获取用户工资
-                    salary=GetUserSalary(name)
+                    salary = GetUserSalary(name)
                     print("{_name}的工资是：{_salary}".format(_name=name, _salary=salary))
                     break
                 else:
