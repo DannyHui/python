@@ -4,6 +4,6 @@
 * test.md (测试文档)
 * staff.txt (员工信息文件)
 * 员工信息管理.png (程序的流程图文件)
-> 引用PrettyTable和os模块
-    PrettyTable 格式化输出表格
-    os 文件删除和重命名操作
+> 引用PrettyTable和os模块<br/>
+    (1)PrettyTable 格式化输出表格
+    (2)os 文件删除和重命名操作
