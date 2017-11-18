@@ -4,19 +4,20 @@
 # select * from staff where age > 37
 # 可进行模糊查询，语法至少支持下面3种:
 # 　　select name,age from staff where age > 22
-# 　　select  * from staff_table where dept = "IT"
-#     select  * from staff_table where enroll_date like "2013"
+# 　　select  * from staff where dept = "IT"
+#     select  * from staff where enroll_date like "2013"
 # 查到的信息，打印后，最后面还要显示查到的条数
 # 可创建新员工纪录，以phone做唯一键，staff_id需自增
 # 可删除指定员工信息纪录，输入员工id，即可删除
 # 可修改员工信息，语法如下:
-# 　　UPDATE staff_table SET dept="Market" where dept = "IT"
+# 　　update staff set dept="Market" where dept = "IT"
 # Description ：
 # Author ： Danny
 # date： 2017/11/15
 # -------------------------------
 
 from prettytable import PrettyTable
+import os
 
 
 # sql 解析
@@ -35,6 +36,63 @@ def SqlParse(sql):
     return sql_dict
 
 
+# 检查输入sql格式是否合法
+def checkSqlFormat(sql_dict):
+    ischeck = True
+    cols = ["id", "name", "age", "phone", "dept", "enroll_date"]
+    if sql_dict["commond"].__name__ == "Insert":
+        if len(sql_dict["into"]) > 0 and sql_dict["into"][0] != "staff":
+            ischeck = False
+        if ischeck and len(sql_dict["values"][0].split(',')) != 5:
+            ischeck = False
+    elif sql_dict["commond"].__name__ == "Delete":
+        if len(sql_dict["from"]) > 0 and sql_dict["from"][0] != "staff":
+            ischeck = False
+        if ischeck and len(sql_dict["where"]) > 0:
+            ischeck = CheckSqlWhere(sql_dict["where"])
+    elif sql_dict["commond"].__name__ == "Update":
+        if len(sql_dict["update"]) > 0 and sql_dict["update"][0] != "staff":
+            ischeck = False
+        if ischeck and len(sql_dict.get("set")) > 0:
+            for item in sql_dict.get("set"):
+                if list(item.keys())[0] not in cols:
+                    ischeck = False
+                    break
+        if ischeck and len(sql_dict["where"]) > 0:
+            ischeck = CheckSqlWhere(sql_dict["where"])
+    elif sql_dict["commond"].__name__ == "Select":
+        if len(sql_dict["from"]) > 0 and sql_dict["from"][0] != "staff":
+            ischeck = False
+        if ischeck and len(sql_dict["select"]) > 0:
+            if sql_dict["select"][0] != '*':
+                for field in sql_dict["select"][0].split(','):
+                    if field not in cols:
+                        ischeck = False
+                        break
+        if ischeck and len(sql_dict["where"]) > 0:
+            ischeck = CheckSqlWhere(sql_dict["where"])
+        if ischeck and len(sql_dict["limit"]) > 0:
+            if not str(sql_dict["limit"][0]).isdigit():
+                ischeck = False
+    return ischeck
+
+
+# where条件 格式校验
+def CheckSqlWhere(sql_where):
+    ischeck = True
+    logic_opt = ["or", "and"]
+    for wh in sql_where:
+        if wh not in logic_opt:
+            if type(wh) is not list:
+                ischeck = False
+                break
+            else:
+                if len(wh) != 3:
+                    ischeck = False
+                    break
+    return ischeck
+
+
 # 添加语句解析 Insert
 def InsertParse(sql_list):
     sql_dict = {
@@ -42,7 +100,6 @@ def InsertParse(sql_list):
         "into": [],  # 表名
         "values": [],  # 插入的值
     }
-    print(sql_list)
     sql_dict = CommondParse(sql_dict, sql_list)
     return sql_dict
 
@@ -83,8 +140,6 @@ def SelectParse(sql_list):
     return sql_dict
 
 
-# select name,age from staff_table where age > 22
-# update staff set name = 李,age = 26 where id = 1
 # 命令解析
 def CommondParse(sql_dict, sql_list):
     item_key = ''
@@ -119,7 +174,8 @@ def WhereParse(sql_where):
         else:
             str_where.append(item)
     else:
-        where_array.append(str_where)
+        if len(str_where) > 0:
+            where_array.append(str_where)
     return where_array
 
 
@@ -150,17 +206,19 @@ def Insert(sql_dict):
     # 手机号是否存在
     phone_exist = False
     phone = sql_dict.get("values")[0].split(',')[2]
-    with open(str.format("{tbname}.txt", tbname=sql_dict.get("into")[0]), 'r', encoding="utf-8") as f1, \
-            open(str.format("{tbname}.txt", tbname=sql_dict.get("into")[0]), 'a', encoding="utf-8") as f2:
-        lines = f1.readlines()
+    with open(str.format("{tbname}.txt", tbname=sql_dict.get("into")[0]), 'ab+') as f:
+        f.seek(0, 0)
+        lines = f.readlines()
         for line in lines:
+            line = line.decode(encoding='utf-8')
             if phone == line.split(',')[3]:
                 phone_exist = True
                 break
         if not phone_exist:
             if len(lines) >= 1:
-                id = int(lines[-1].split(',')[0]) + 1
-            f2.write("\n%s,%s" % (str(id), sql_dict.get("values")[0]))
+                line = lines[-1].decode(encoding='utf-8')
+                new_id = int(line.split(',')[0]) + 1
+            f.write(bytes("%s,%s\n" % (str(new_id), sql_dict.get("values")[0]), encoding='utf-8'))
     if phone_exist:
         data_arr[0] = 0
         data_arr.append("手机号已经存在！")
@@ -179,25 +237,30 @@ def Delete(sql_dict):
     not_del_data = []
     # 数据总记录数
     total = 0
-    with open(str.format("{tbname}.txt", tbname=sql_dict.get("from")[0]), 'r', encoding="utf-8") as f1:
-        lines = f1.readlines()
-        for line in lines:
-            total += 1
-            data_dict = dict(zip(title.split(','), line.strip().split(',')))
-            # where 条件过滤
-            if not where_action(data_dict, sql_dict.get("where")):
-                not_del_data.append(line)
-    if len(not_del_data) < total:
-        with open(str.format("{tbname}.txt", tbname=sql_dict.get("from")[0]), 'w', encoding="utf-8") as f2:
-            for data in not_del_data:
-                f2.write(data)
+    if len(sql_dict.get("where")) > 0:
+        tablename = sql_dict.get("from")[0]
+        old_filename = str.format("{tbname}.txt", tbname=tablename)
+        new_filename = str.format("{tbname}_new.txt", tbname=tablename)
+        with open(old_filename, 'r', encoding="utf-8") as r_file, \
+                open(new_filename, 'w', encoding="utf-8") as w_file:
+            for line in r_file:
+                total += 1
+                data_dict = dict(zip(title.split(','), line.strip().split(',')))
+                if not where_action(data_dict, sql_dict.get("where")):
+                    not_del_data.append(line)
+            if len(not_del_data) < total:
+                for item in not_del_data:
+                    w_file.write(item)
+        # 删除原文件
+        os.remove(old_filename)
+        # 重命名新文件
+        os.rename(new_filename, old_filename)
     print("删除%d条数据!" % (total - len(not_del_data)))
     return data_arr
 
 
 # 修改操作
 def Update(sql_dict):
-    # {'commond': , 'update': ['staff'], 'set': {'name': '李', 'age': '26'}, 'where': [['id', '=', '1']]}
     # 标题
     title = "id,name,age,phone,dept,enroll_date"
     # 返回数据
@@ -206,8 +269,12 @@ def Update(sql_dict):
     data_arr = []
     # 修改记录数
     updateRecord = 0
-    with open(str.format("{tbname}.txt", tbname=sql_dict.get("update")[0]), 'r', encoding="utf-8") as f1:
-        for line in f1:
+    tablename = sql_dict.get("update")[0]
+    old_filename = str.format("{tbname}.txt", tbname=tablename)
+    new_filename = str.format("{tbname}_new.txt", tbname=tablename)
+    with open(old_filename, 'r', encoding="utf-8") as r_file, \
+            open(new_filename, 'w', encoding="utf-8") as w_file:
+        for line in r_file:
             data_dict = dict(zip(title.split(','), line.strip().split(',')))
             # where 条件过滤
             if where_action(data_dict, sql_dict.get("where")):
@@ -216,9 +283,12 @@ def Update(sql_dict):
                 for item in sql_dict.get("set"):
                     data_dict[list(item.keys())[0]] = list(item.values())[0]
             data_arr.append(','.join(list(data_dict.values())) + "\n")
-    with open(str.format("{tbname}.txt", tbname=sql_dict.get("update")[0]), 'w', encoding="utf-8") as f2:
-        for data in data_arr:
-            f2.write(data)
+        for item in data_arr:
+            w_file.write(item)
+    # 删除原文件
+    os.remove(old_filename)
+    # 重命名新文件
+    os.rename(new_filename, old_filename)
     print("修改%d条数据!" % (updateRecord))
     return data_return
 
@@ -253,9 +323,7 @@ def Select(sql_dict):
 # where 过滤条件
 def where_action(data_dict, sql_where):
     if len(sql_where) == 0:
-        return True;
-    # data_dict={'id': '1', 'name': 'test001', 'age': '23', 'phone': '13475648745', 'dept': '研发部', 'enroll_date': '2017-01-20'}
-    # sql_where=['id','>=','1'] ,'or',['id','<=','1'],'or',['name','like','李']
+        return True
     exp_result = []
     for exp in sql_where:
         if type(exp) is list:
@@ -281,13 +349,13 @@ if __name__ == "__main__":
         welcome_str = '''
                                               欢迎来到员工信息查询程序
         ------------------------------------------------------------------------------------------------------
-        操作语法说明：
-        添加：INSERT INTO 表名称 VALUES 值1, 值2,....
-        删除：DELETE FROM 表名称 WHERE 列名称 = 某值
-        修改：UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
-        查询：SELECT * FROM 表名称 WHERE 列名称 = 某值
-              SELECT * FROM 表名称 WHERE 列名称 LIKE 某值
-              SELECT 列名称1,列名称2... FROM 表名称 WHERE 列名称 = 某值
+        操作语法说明【命令区分大小写】：
+        添加：insert into 表名称 values 值1, 值2,....
+        删除：delete from 表名称 where 列名称 = 某值
+        修改：update 表名称 set 列名称 = 新值 where 列名称 = 某值
+        查询：select * from 表名称 where 列名称 = 某值
+              select * from 表名称 where 列名称 like 某值
+              select 列名称1,列名称2... from 表名称 where 列名称 = 某值
         ------------------------------------------------------------------------------------------------------
             '''
         print(welcome_str)
@@ -300,8 +368,8 @@ if __name__ == "__main__":
                 continue
         # sql解析
         sql_dict = SqlParse(input_sql)
-        if len(sql_dict) == 0:
-            print("输入错误，请重新输入！")
+        if len(sql_dict) == 0 or checkSqlFormat(sql_dict) == False:
+            print("SQL输入格式错误，请重新输入！")
             continue
         # sql执行
         data_arr = sql_Execute(sql_dict)
@@ -320,7 +388,4 @@ if __name__ == "__main__":
             else:
                 print("执行失败！")
                 print(data_arr[1])
-            continue
-        else:
-            print("系统错误，请重新输入！")
             continue
