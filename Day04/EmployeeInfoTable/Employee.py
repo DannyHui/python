@@ -349,7 +349,11 @@ if __name__ == "__main__":
         welcome_str = '''
                                               欢迎来到员工信息查询程序
         ------------------------------------------------------------------------------------------------------
-        操作语法说明【命令区分大小写】：
+        注意事项：
+        1、命令区分大小写；
+        2、中间一个空格隔开；
+        3、表名称：staff，列名称：id,name,age,phone,dept,enroll_date；
+        操作语法：
         添加：insert into 表名称 values 值1, 值2,....
         删除：delete from 表名称 where 列名称 = 某值
         修改：update 表名称 set 列名称 = 新值 where 列名称 = 某值
@@ -389,3 +393,5 @@ if __name__ == "__main__":
                 print("执行失败！")
                 print(data_arr[1])
             continue
+        else:
+            print("无执行记录！")
