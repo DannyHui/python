@@ -26,5 +26,16 @@ DATABASE = {
 LOG_LEVEL = logging.INFO
 # 日志文件
 LOG_File = {
-    'access': "access.log" #访问日志
+    'access': "access.log", #访问日志
+    'transaction':"transaction.log" # 交易日志
+}
+# 交易类型
+TRANSACTION_TYPE = {
+    'repay': {'action': 'plus', 'interest': 0}, # 还款
+    'receive': {'action': 'plus', 'interest': 0},   # 收款
+    'withdraw': {'action': 'minus', 'interest': 0.05},  # 取款
+    'transfer': {'action': 'minus', 'interest': 0.05},  # 转账
+    'pay': {'action': 'minus', 'interest': 0},  # 支付
+    'save': {'action': 'plus', 'interest': 0},  # 存款
+
 }
