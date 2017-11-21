@@ -20,7 +20,7 @@ DATABASE = {
     'engineer': "file_storage",  # 数据存储格式：文件/数据库
     'account': "accounts",  # 用户信息目录
     'product': "product",  # 商品信息目录
-    'shoplist': "shoplist",  # 商品信息目录
+    'shoplist': "shoplist",  # 购物清单目录
     'dbpath': os.path.join(BASE_DIR, "db")  # 数据文件路径
 }
 # 日志信息
