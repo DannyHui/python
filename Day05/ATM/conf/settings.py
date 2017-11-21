@@ -18,7 +18,9 @@ sys.path.append(BASE_DIR)
 # 数据库信息
 DATABASE = {
     'engineer': "file_storage",  # 数据存储格式：文件/数据库
-    'dbname': "accounts",  # 数据文件存储目录名称
+    'account': "accounts",  # 用户信息目录
+    'product': "product",  # 商品信息目录
+    'shoplist': "shoplist",  # 商品信息目录
     'dbpath': os.path.join(BASE_DIR, "db")  # 数据文件路径
 }
 # 日志信息
@@ -26,13 +28,13 @@ DATABASE = {
 LOG_LEVEL = logging.INFO
 # 日志文件
 LOG_File = {
-    'access': "access.log", #访问日志
-    'transaction':"transaction.log" # 交易日志
+    'access': "access.log",  # 访问日志
+    'transaction': "transaction.log"  # 交易日志
 }
 # 交易类型
 TRANSACTION_TYPE = {
-    'repay': {'action': 'plus', 'interest': 0}, # 还款
-    'receive': {'action': 'plus', 'interest': 0},   # 收款
+    'repay': {'action': 'plus', 'interest': 0},  # 还款
+    'receive': {'action': 'plus', 'interest': 0},  # 收款
     'withdraw': {'action': 'minus', 'interest': 0.05},  # 取款
     'transfer': {'action': 'minus', 'interest': 0.05},  # 转账
     'pay': {'action': 'minus', 'interest': 0},  # 支付

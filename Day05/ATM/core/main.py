@@ -11,9 +11,10 @@ from core import log
 from core import account
 from core import auth
 from core import transaction
-
+from core import product
 
 # 用户数据信息
+from Day05.ATM.core import shopping
 
 user_data = {
     'account_id': None,  # 帐号ID
@@ -26,21 +27,85 @@ access_logger = log.log("access")
 transaction_logger = log.log("transaction")
 
 
-def get_account_info(account_id):
+def show_account_info(account_id):
     """
-    输出用户信息
-    :param account_id: 用户ID
-    :return:
-    """
+     输出用户信用卡信息
+     :param account_id: 用户ID
+     :return:
+     """
     account_data = account.get_account(account_id)
     cur_balance = """
-        -------------信用卡余额信息--------------
-        信用额度:%s
-        可用额度:%s
-        -------------信用卡余额信息--------------
-        """ % (account_data["credit"], account_data["balance"])
+           -------------信用卡信息--------------
+           信用额度:%s
+           可用额度:%s
+           -------------信用卡信息--------------
+           """ % (account_data["credit"], account_data["balance"])
     print(cur_balance)
-    return account_data
+
+
+def buyShop(user_data):
+    buyProducts = []
+    while True:
+        # 显示商品列表
+        productList = product.GetProductList()
+        str_product = '''
+        ---------------商品列表------------------
+        '''
+        print(str_product)
+        # 格式化输出商品信息
+        title = ["编号", "商品名称", "商品价格(元)"]
+        x = PrettyTable(title)
+        x.align["编号"] = "l"  # 以第一个字段左对齐
+        x.padding_width = 2
+        x.add_row(productList.values())
+        print(x)
+        code = input("请选择购买商品的编号| 退出(q)：").strip()
+        if code.lower() == "q":
+            # 显示购买记录
+            shopping.ShowBuyList(buyProducts)
+            break
+        # 检查商品编号是否合法
+        if not code.isdigit() or int(code) not in range(1, len(productList) + 1):
+            print("商品编号输入不合法，请重新输入！")
+            continue
+        else:
+            # 获取选择商品 名称 和价格
+            product = product.GetProductInfo(int(code))
+            productName = product[0]
+            productPrice = product[1]
+            userName = user_data["account_id"]
+            # 获取用户信用卡可用额度
+            account_data = account.get_account(userName)
+            amount = account_data["balance"]
+            # 判断余额是否足够
+            if float(amount) < productPrice:
+                print("您的信用卡余额不足，请选择其它商品！")
+                continue
+            else:
+                # 保存消费记录
+                shopping.SaveShoppingList(userName, productName, productPrice)
+                # 修改用户信用卡信息
+                new_balance = float(amount) - productPrice
+                account_data = user_data["account_data"]
+                account_data["balance"] = new_balance
+                account.update_account(account_data)
+                # 添加购买记录
+                buyProducts.append(productName)
+
+                # 是否继续购买
+                while True:
+                    isShop = input("是否继续购买(Y/N)| 退出(q)：").strip()
+                    if isShop.lower() not in ['n', 'y', 'q']:
+                        print("输入不合法，请重新输入！")
+                        continue
+                    else:
+                        break
+                if isShop.lower() == "y":
+                    continue
+                else:
+                    # 显示购买记录
+                    shopping.ShowBuyList(buyProducts)
+                    break
 
 
 def account_info(user_data):
@@ -68,7 +133,7 @@ def repay(user_data):
     :return:
     """
     while True:
-        account_data = get_account_info(user_data["account_id"])
+        account_data = show_account_info(user_data["account_id"])
         repay_amount = input("\033[31;1m请输入还款金额或者输入b退出:\033[0m").strip()
         if repay_amount == "b":
             break
@@ -80,8 +145,6 @@ def repay(user_data):
             print("\033[31;1m输入错误，请您重新输入!\033[0m")
 
 
-
-
 def withdraw(user_data):
     """
     取款
@@ -89,7 +152,7 @@ def withdraw(user_data):
     :return:
     """
     while True:
-        account_data = get_account_info(user_data["account_id"])
+        account_data = show_account_info(user_data["account_id"])
         withdraw_amount = input("\033[31;1m请输入取款金额或者输入b退出:\033[0m").strip()
         if withdraw_amount == "b":
             break
@@ -103,6 +166,7 @@ def withdraw(user_data):
 
         else:
             print("\033[31;1m输入错误，请您重新输入!\033[0m")
+
 
 def transfer(user_data):
     """
@@ -125,6 +189,7 @@ def transfer(user_data):
 
         else:
             print("\033[31;1m输入错误，请您重新输入!\033[0m")
+
 
 def paylist(user_data):
     """
@@ -158,27 +223,29 @@ def logout(user_data):
 def interactive(user_data):
     msg = (
         """
-        -------------ATM---------------
+        -------------欢迎来到个人业务平台---------------
         \033[31;1m
-        1.  账户信息
-        2.  还款(存款)
-        3.  提现(取款)
-        4.  转账
-        5.  账单
-        6.  退出
+        1.  购物商城
+        2.  账户信息
+        3.  存款
+        4.  取款
+        5.  转账
+        6.  账单
+        7.  退出
         \033[0m"""
     )
     print(msg)
     menu_dic = {
-        "1": account_info,
-        "2": repay,
-        "3": withdraw,
-        "4": transfer,
-        "5": paylist,
-        "6": logout
+        "1": buyshop,
+        "2": account_info,
+        "3": repay,
+        "4": withdraw,
+        "5": transfer,
+        "6": paylist,
+        "7": logout
     }
     while True:
-        choice = input("请选择功能菜单编号<<<:").strip()
+        choice = input("请选择业务功能编号<<<:").strip()
         if choice in menu_dic:
             menu_dic[choice](user_data)
         else:

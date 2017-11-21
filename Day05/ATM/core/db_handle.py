@@ -5,16 +5,16 @@
 # date： 2017/11/19
 # -------------------------------
 
-def file_db_handle(database):
+def file_db_handle(database,tbname):
     """
         文件格式存储数据
         :param database:数据配置参数
         :return: 返回路径  ATM/db/accounts
     """
-    db_path = "%s/%s" % (database["dbpath"], database["dbname"])
+    db_path = "%s/%s" % (database["dbpath"], database[tbname])
     return db_path
 
-def mysql_db_handle(database):
+def mysql_db_handle(database,tbname):
     """
         mysql存储数据，方便以后对数据存储进行扩展
         :param database:数据库配置参数
@@ -22,13 +22,13 @@ def mysql_db_handle(database):
     pass
 
 
-def handle(database):
+def handle(database,tbname):
     """
         数据处理
         :param database: 数据库配置参数
         :return: 返回路径
     """
     if database["engineer"] == "file_storage":
-        return file_db_handle(database)
+        return file_db_handle(database,tbname)
     if database["engineer"] == "mysql":
-        return mysql_db_handle(database)
+        return mysql_db_handle(database,tbname)
