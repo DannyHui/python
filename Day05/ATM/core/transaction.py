@@ -9,7 +9,7 @@ from conf import settings
 from core import account
 
 
-def make_transaction(account_data, transcation_type, amount, log_obj):
+def with_transaction(account_data, transcation_type, amount, log_obj):
     """
     处理用户的交易
     :param account_data:用户的帐户信息(dict)
