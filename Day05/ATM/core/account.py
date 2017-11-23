@@ -21,7 +21,7 @@ def get_account(account_id):
     return account_data
 
 
-def update_account(account_data,"account"):
+def update_account(account_data):
     """
     将用户信息更新到文件中
     :param account_data: 用户信息

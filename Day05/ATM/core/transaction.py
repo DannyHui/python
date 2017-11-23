@@ -37,6 +37,7 @@ def with_transaction(account_data, transcation_type, amount, log_obj):
                       % (account_data["credit"], (amount + interest), balace))
         account_data["balance"] = new_balance
         # 更新用户信息
+        account_data["status"] = 0
         account.update_account(account_data)
         return account_data
     else:

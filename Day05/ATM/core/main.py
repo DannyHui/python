@@ -262,11 +262,13 @@ def run():
         程序启动
         :return:
     """
+    user_data = ""
+    # 用户交互
+    interactive(user_data)
+
     # 用户认证
-    login_account = auth.login_account(user_data, access_logger)
-    if user_data["is_authenticated"]:  # 如果用户认证成功
-        # 将用户登录信息赋给用户数据信息user_data
-        user_data["account_data"] = login_account
-        user_data["account_id"] = user_data["account_data"].get("id")
-        # 用户交互
-        interactive(user_data)
+    # login_account = auth.login_account(user_data, access_logger)
+    # if user_data["is_authenticated"]:  # 如果用户认证成功
+    #     # 将用户登录信息赋给用户数据信息user_data
+    #     user_data["account_data"] = login_account
+    #     user_data["account_id"] = user_data["account_data"].get("id")
