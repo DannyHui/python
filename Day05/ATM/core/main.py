@@ -11,10 +11,11 @@ from core import log
 from core import account
 from core import auth
 from core import transaction
+from core import shopping
 from core import product
 
 # 用户数据信息
-from Day05.ATM.core import shopping
+
 
 user_data = {
     'account_id': None,  # 帐号ID
@@ -43,21 +44,24 @@ def show_account_info(account_id):
     print(cur_balance)
 
 
-def buyShop(user_data):
+def buyshop(user_data):
     buyProducts = []
     while True:
         # 显示商品列表
         productList = product.GetProductList()
+
         str_product = '''
         ---------------商品列表------------------
         '''
         print(str_product)
+
         # 格式化输出商品信息
         title = ["编号", "商品名称", "商品价格(元)"]
         x = PrettyTable(title)
         x.align["编号"] = "l"  # 以第一个字段左对齐
         x.padding_width = 2
-        x.add_row(productList.values())
+        for pro in productList:
+            x.add_row(pro.values())
         print(x)
         code = input("请选择购买商品的编号| 退出(q)：").strip()
         if code.lower() == "q":
@@ -70,9 +74,9 @@ def buyShop(user_data):
             continue
         else:
             # 获取选择商品 名称 和价格
-            product = product.GetProductInfo(int(code))
-            productName = product[0]
-            productPrice = product[1]
+            products = product.GetProductInfo(int(code))
+            productName = products[0]
+            productPrice = products[1]
             userName = user_data["account_id"]
             # 获取用户信用卡可用额度
             account_data = account.get_account(userName)
@@ -84,11 +88,9 @@ def buyShop(user_data):
             else:
                 # 保存消费记录
                 shopping.SaveShoppingList(userName, productName, productPrice)
-                # 修改用户信用卡信息
-                new_balance = float(amount) - productPrice
-                account_data = user_data["account_data"]
-                account_data["balance"] = new_balance
-                account.update_account(account_data)
+                # 添加交易记录
+                transaction.with_transaction(account_data, "withdraw", productPrice,
+                                             transaction_logger)
                 # 添加购买记录
                 buyProducts.append(productName)
 
@@ -115,15 +117,18 @@ def account_info(user_data):
     :return:
     """
     # 数据格式化输出
+    user_info = account.get_account(user_data["account_id"])
     title = ["用户名", "密码", "信用额度", "注册日期", "过期日期", "状态", "可用额度", "还款日期"]
-    # x = PrettyTable(user_data["account_data"].keys())
+    # x = PrettyTable(user_info.keys())
     x = PrettyTable(title)
     x.align["用户名"] = "l"  # 以第一个字段左对齐
     x.padding_width = 4
-    str_status = ("正常" if int(user_data["account_data"]["status"]) == 0 else "异常")
-    user_data["account_data"]["status"] = str_status
-    x.add_row(user_data["account_data"].values())
+    print(user_info["status"])
+    str_status = ("正常" if int(user_info["status"]) == 0 else "异常")
+    user_info["status"] = str_status
+    x.add_row(user_info.values())
     print(x)
+    # user_data["account_data"]["status"] = 0
 
 
 def repay(user_data):
