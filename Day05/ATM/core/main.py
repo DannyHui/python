@@ -16,7 +16,6 @@ from core import product
 
 # 用户数据信息
 
-
 user_data = {
     'account_id': None,  # 帐号ID
     'is_authenticated': False,  # 是否认证
@@ -44,7 +43,8 @@ def show_account_info(account_id):
     print(cur_balance)
 
 
-def buyshop(user_data):
+@auth.auth_account(log_obj=access_logger)
+def buyshop():
     buyProducts = []
     while True:
         # 显示商品列表
@@ -108,9 +108,11 @@ def buyshop(user_data):
                     # 显示购买记录
                     shopping.ShowBuyList(buyProducts)
                     break
+    return True
 
 
-def account_info(user_data):
+@auth.auth_account(log_obj=access_logger)
+def account_info():
     """
     查看账户信息
     :param user_data:
@@ -131,14 +133,16 @@ def account_info(user_data):
     # user_data["account_data"]["status"] = 0
 
 
-def repay(user_data):
+@auth.auth_account(log_obj=access_logger)
+def repay():
     """
     还款
     :param user_data: 用户信息
     :return:
     """
     while True:
-        account_data = show_account_info(user_data["account_id"])
+        # account_data = account.get_account(user_data["account_id"])
+        account_data = user_data["account_data"]
         repay_amount = input("\033[31;1m请输入还款金额或者输入b退出:\033[0m").strip()
         if repay_amount == "b":
             break
@@ -150,14 +154,16 @@ def repay(user_data):
             print("\033[31;1m输入错误，请您重新输入!\033[0m")
 
 
-def withdraw(user_data):
+@auth.auth_account(log_obj=access_logger)
+def withdraw():
     """
     取款
     :param user_data: 用户信息
     :return:
     """
     while True:
-        account_data = show_account_info(user_data["account_id"])
+        # account_data = account.get_account(user_data["account_id"])
+        account_data = user_data["account_data"]
         withdraw_amount = input("\033[31;1m请输入取款金额或者输入b退出:\033[0m").strip()
         if withdraw_amount == "b":
             break
@@ -173,14 +179,16 @@ def withdraw(user_data):
             print("\033[31;1m输入错误，请您重新输入!\033[0m")
 
 
-def transfer(user_data):
+@auth.auth_account(log_obj=access_logger)
+def transfer():
     """
     转账
     :param user_data: 用户信息
     :return:
     """
     while True:
-        account_data = get_account_info(user_data["account_id"])
+        # account_data = account.get_account(user_data["account_id"])
+        account_data = user_data["account_data"]
         transfer_amount = input("\033[31;1m请输入转账金额或者输入b退出:\033[0m").strip()
         if transfer_amount == "b":
             break
@@ -196,7 +204,8 @@ def transfer(user_data):
             print("\033[31;1m输入错误，请您重新输入!\033[0m")
 
 
-def paylist(user_data):
+@auth.auth_account(log_obj=access_logger)
+def paylist():
     """
     查看账单
     :param user_data: 用户信息
@@ -214,7 +223,7 @@ def paylist(user_data):
                 print(line)
 
 
-def logout(user_data):
+def logout():
     """
     退出系统
     :param user_data: 用户信息
@@ -225,7 +234,7 @@ def logout(user_data):
 
 
 # 用户交互
-def interactive(user_data):
+def interactive():
     msg = (
         """
         -------------欢迎来到个人业务平台---------------
@@ -252,7 +261,7 @@ def interactive(user_data):
     while True:
         choice = input("请选择业务功能编号<<<:").strip()
         if choice in menu_dic:
-            menu_dic[choice](user_data)
+            menu_dic[choice]()
         else:
             print("\033[31;1m编号输入错误，请您重新输入!\033[0m")
 
@@ -262,13 +271,5 @@ def run():
         程序启动
         :return:
     """
-    user_data = ""
     # 用户交互
-    interactive(user_data)
-
-    # 用户认证
-    # login_account = auth.login_account(user_data, access_logger)
-    # if user_data["is_authenticated"]:  # 如果用户认证成功
-    #     # 将用户登录信息赋给用户数据信息user_data
-    #     user_data["account_data"] = login_account
-    #     user_data["account_id"] = user_data["account_data"].get("id")
+    interactive()

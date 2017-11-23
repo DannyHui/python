@@ -9,6 +9,8 @@ import time
 from core import db_handle
 from conf import settings
 from core import account
+from core import main
+from core import log
 
 
 # def timer(timeout=0):
@@ -22,14 +24,16 @@ from core import account
 #         return wrapper
 #     return decorator
 
-def login_account(account_id, password,log_obj):
+
+
+def login_account(account_id, password, log_obj):
     """
     用户登录认证
     :param acount: 用户名
     :param password: 密码
     :return:如果信用卡未超期，返回用户信息；反之则打印相应提示
     """
-    db_path = db_handle.handle(settings.DATABASE,"account")
+    db_path = db_handle.handle(settings.DATABASE, "account")
     # 用户文件
     account_file = "%s\%s.json" % (db_path, account_id)
     # 判断用户是否存在
@@ -52,6 +56,7 @@ def login_account(account_id, password,log_obj):
         log_obj.error("用户【%s】不存在!" % account_id)
         print("\033[31;1m 用户【%s】不存在!\033[0m" % account_id)
 
+
 # def auth_account(user_data, log_obj):
 #     """
 #     用户登录
@@ -59,23 +64,33 @@ def login_account(account_id, password,log_obj):
 #     :param log_obj: 日志对象
 #     :return: 用户信息正确且信用卡正常则返回用户数据(dict),反之退出程序
 #     """
-def decorator(func):
-    def wrapper(*args, **kwargs):
-        retry = 0
-        while not user_data["is_authenticated"] and retry < 3:
-            account_id = input("请输入用户名:").strip()
-            password = input("请输入密码:").strip()
-            user_auth_data = login_account(account_id, password, log_obj)
-            if user_auth_data:
-                user_data["is_authenticated"] = True
-                user_data["account_id"] = account_id
-                print("欢迎【%s】登录" % account_id)
-                func(*args, **kwargs)
-                return user_auth_data
-            retry += 1
-        else:
-            print("用户【%s】尝试输入密码次数达到3次..." % account_id)
-            log_obj.error("用户【%s】尝试输入密码次数达到3次..." % account_id)
-            exit()
-    return wrapper
-return decorator
+def auth_account(log_obj):
+    """
+    用户认证装饰器
+    :param log_obj: 日志对象
+    :return:
+    """
+    def out_wrapper(func):
+        def wrapper(*args, **kwargs):
+            retry = 0
+            while not main.user_data["is_authenticated"] and retry < 3:
+                account_id = input("请输入用户名:").strip()
+                password = input("请输入密码:").strip()
+                user_auth_data = login_account(account_id, password, log_obj)
+                if user_auth_data:
+                    main.user_data["is_authenticated"] = True
+                    main.user_data["account_id"] = account_id
+                    main.user_data["account_data"] = user_auth_data
+                    print("欢迎【%s】登录" % account_id)
+                    return func(*args, **kwargs)
+                else:
+                    retry += 1
+            else:
+                if retry == 3:
+                    print("用户【%s】尝试输入密码次数达到3次..." % account_id)
+                    log_obj.error("用户【%s】尝试输入密码次数达到3次..." % account_id)
+                    exit()
+                else:
+                    func(*args, **kwargs)
+        return wrapper
+    return out_wrapper
