@@ -4,12 +4,14 @@
 # Author ： Danny
 # date： 2017/12/3
 # -------------------------------
-import time
+from core.models.ResponseResult import ResponseResult
 from core.models.Admin import Admin
 from core.models.School import School
 from core.models.Teacher import Teacher
 from core.models.Course import Course
-from core.models.ResponseResult import ResponseResult
+from core.models.CourseTeacher import CourseTeacher
+from core.models.Classes import Classes
+from core.models.Student import Student
 from prettytable import PrettyTable
 
 
@@ -86,8 +88,14 @@ class AdminService(object):
             school_list = School.get_all_list()
             for index, s in enumerate(school_list):
                 print(index, s.name, s.address)
-            sid = int(input('请选择学校: '))
-            obj_school = school_list[sid]
+            while True:
+                sid = input('请选择学校: ').strip()
+                if sid.isdigit() and int(sid) in range(0, len(school_list)):
+                    break
+                else:
+                    print("\033[1;31;40m选项错误，请重新输入!\033[0m")
+                    continue
+            obj_school = school_list[int(sid)]
             name = input('请输入课程名: ').strip()
             price = input('请输入课程价格: ').strip()
             period = input('请输入课程周期: ').strip()
@@ -117,13 +125,79 @@ class AdminService(object):
         print(x)
 
     def create_course_teacher(self):
-        pass
+        try:
+            print('关联老师与课程'.center(60, '*'))
+            # 选择老师
+            teacher_list = Teacher.get_all_list()
+            for index, t in enumerate(teacher_list):
+                print(index, t.name)
+            tid = int(input('请选择老师: '))
+            obj_teacher = teacher_list[tid]
+
+            # 选择课程
+            course_list = Course.get_all_list()
+            for index, c in enumerate(course_list):
+                print(index, c.name)
+            cid = int(input('请选择课程: '))
+            obj_course = course_list[cid]
+            course_teacher_list = [(ct.teacher_id, ct.course_id) for ct in CourseTeacher.get_all_list()]
+            if (obj_teacher.id, obj_course.id) in course_teacher_list:
+                raise Exception('课程[%s] 老师[%s] 关联关系已经存在,不可重复创建' % (obj_course.name, obj_teacher.name))
+            obj_course_teacher = CourseTeacher(obj_course.id, obj_teacher.id)
+            obj_course_teacher.save()
+            msg = '课程[%s] 老师[%s] 关联关系 创建成功' % (obj_course.name, obj_teacher.name)
+            res_result = ResponseResult(True, msg, "")
+        except Exception as e:
+            res_result = ResponseResult(False, str(e), "")
+        return res_result
 
     def create_classes(self):
-        pass
+        try:
+            print('创建班级'.center(60, '*'))
+            # 选择学校
+            school_list = School.get_all_list()
+            for index, s in enumerate(school_list):
+                print(index, s.name, s.address)
+            sid = int(input('请选择学校: '))
+            obj_school = school_list[sid]
+            name = input('请输入班级名称: ').strip()
+            # 选择课程-老师
+            course_teacher_list = CourseTeacher.get_all_list()
+            for index, ct in enumerate(course_teacher_list):
+                course_obj = Course.get_obj_by_id(ct.course_id)
+                teacher_obj = Teacher.get_obj_by_id(ct.teacher_id)
+                print(index, course_obj.name, teacher_obj.name)
+            ctid = int(input('请选择课程-老师: '))
+            course_teacher = course_teacher_list[ctid]
+            c_obj = Course.get_obj_by_id(course_teacher.course_id)
+            t_obj = Teacher.get_obj_by_id(course_teacher.teacher_id)
+            classes_list = [(c.name, c.school_id, c.course_teacher_id) for c in Classes.get_all_list()]
+            if (name, obj_school.id, course_teacher.id) in classes_list:
+                raise Exception(
+                    '班级[%s] 学校[%s] 课程[%s] 老师[%s] 已经存在,不可重复创建'
+                    % (name, obj_school.name, c_obj.name, t_obj.name))
+            obj_classes = Classes(name, obj_school.id, course_teacher.id)
+            obj_classes.save()
+            msg = '学校[%s] 班级[%s] 课程[%s] 老师[%s] 创建成功' % (obj_school.name, name, c_obj.name, t_obj.name)
+            res_result = ResponseResult(True, msg, "")
+        except Exception as e:
+            res_result = ResponseResult(False, str(e), "")
+        return res_result
 
     def show_classes(self):
-        pass
+        # 数据格式化输出
+        title = ["班级名称", "学校名称", "课程", "老师"]
+        x = PrettyTable(title)
+        x.align["班级名称"] = "l"  # 以第一个字段左对齐
+        x.padding_width = 1
+        for c in Classes.get_all_list():
+            # 学校名称
+            school_obj = School.get_obj_by_id(c.school_id)
+            course_teacher = CourseTeacher.get_obj_by_id(c.course_teacher_id)
+            c_obj = Course.get_obj_by_id(course_teacher.course_id)
+            t_obj = Teacher.get_obj_by_id(course_teacher.teacher_id)
+            x.add_row([c.name, school_obj.name, c_obj.name, t_obj.name])
+        print(x)
 
     def create_student(self):
         pass

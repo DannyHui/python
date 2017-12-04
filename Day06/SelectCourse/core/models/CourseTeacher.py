@@ -6,11 +6,11 @@
 # -------------------------------
 from core.db.DbHelper import DbHelper
 from core.models.BaseModel import BaseModel
-from lib import Common
+from lib.Common import Common
 
 
 class CourseTeacher(BaseModel):
-    db_path = DbHelper("courseteacher").file_db_handle()
+    db_path = DbHelper("course_teacher").file_db_handle()
 
     def __init__(self, course_id, teacher_id):
         self.id = Common.create_uuid()
