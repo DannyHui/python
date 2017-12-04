@@ -12,7 +12,6 @@ from lib.Common import Common
 
 class Teacher(BaseModel):
     db_path = DbHelper("teacher").file_db_handle()
-
     def __init__(self, name, level):
         self.id = Common.create_uuid()
         self.name = name

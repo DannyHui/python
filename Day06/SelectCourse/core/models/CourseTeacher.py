@@ -10,13 +10,9 @@ from lib import Common
 
 
 class CourseTeacher(BaseModel):
-    db_path = DbHelper("school").file_db_handle()
+    db_path = DbHelper("courseteacher").file_db_handle()
 
     def __init__(self, course_id, teacher_id):
         self.id = Common.create_uuid()
         self.course_id = course_id
         self.teacher_id = teacher_id
-    def get_course_teacher_list(self):
-        course_teacher_list = self.get_all_list()
-        if course_teacher_list:
-            return

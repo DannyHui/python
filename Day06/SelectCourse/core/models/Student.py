@@ -12,8 +12,9 @@ from lib import Common
 class Student(BaseModel):
     db_path = DbHelper("student").file_db_handle()
 
-    def __init__(self, name, age,classes_id):
+    def __init__(self, name, age, sex,classes_id):
         self.id = Common.create_uuid()
         self.name = name
+        self.sex = sex
         self.age = age
         self.classes_id = classes_id

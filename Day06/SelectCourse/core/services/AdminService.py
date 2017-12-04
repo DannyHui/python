@@ -108,8 +108,11 @@ class AdminService(object):
         x = PrettyTable(title)
         x.align["课程名称"] = "l"  # 以第一个字段左对齐
         x.padding_width = 1
-        school_name = "xxx学校"
         for c in Course.get_all_list():
+            school_obj = School.get_obj_by_id(c.school_id)
+            school_name = "XXX"
+            if not school_obj is None:
+                school_name = school_obj.name
             x.add_row([c.name, c.price, c.period, school_name])
         print(x)
 
