@@ -131,15 +131,26 @@ class AdminService(object):
             teacher_list = Teacher.get_all_list()
             for index, t in enumerate(teacher_list):
                 print(index, t.name)
-            tid = int(input('请选择老师: '))
-            obj_teacher = teacher_list[tid]
-
+            while True:
+                tid = input('请选择老师: ').strip()
+                if tid.isdigit() and int(tid) in range(0, len(teacher_list)):
+                    break
+                else:
+                    print("\033[1;31;40m选项错误，请重新输入!\033[0m")
+                    continue
+            obj_teacher = teacher_list[int(tid)]
             # 选择课程
             course_list = Course.get_all_list()
             for index, c in enumerate(course_list):
                 print(index, c.name)
-            cid = int(input('请选择课程: '))
-            obj_course = course_list[cid]
+            while True:
+                cid = input('请选择课程: ').strip()
+                if cid.isdigit() and int(cid) in range(0, len(course_list)):
+                    break
+                else:
+                    print("\033[1;31;40m选项错误，请重新输入!\033[0m")
+                    continue
+            obj_course = course_list[int(cid)]
             course_teacher_list = [(ct.teacher_id, ct.course_id) for ct in CourseTeacher.get_all_list()]
             if (obj_teacher.id, obj_course.id) in course_teacher_list:
                 raise Exception('课程[%s] 老师[%s] 关联关系已经存在,不可重复创建' % (obj_course.name, obj_teacher.name))
@@ -158,8 +169,14 @@ class AdminService(object):
             school_list = School.get_all_list()
             for index, s in enumerate(school_list):
                 print(index, s.name, s.address)
-            sid = int(input('请选择学校: '))
-            obj_school = school_list[sid]
+            while True:
+                sid = input('请选择学校: ').strip()
+                if sid.isdigit() and int(sid) in range(0, len(school_list)):
+                    break
+                else:
+                    print("\033[1;31;40m选项错误，请重新输入!\033[0m")
+                    continue
+            obj_school = school_list[int(sid)]
             name = input('请输入班级名称: ').strip()
             # 选择课程-老师
             course_teacher_list = CourseTeacher.get_all_list()
@@ -167,8 +184,14 @@ class AdminService(object):
                 course_obj = Course.get_obj_by_id(ct.course_id)
                 teacher_obj = Teacher.get_obj_by_id(ct.teacher_id)
                 print(index, course_obj.name, teacher_obj.name)
-            ctid = int(input('请选择课程-老师: '))
-            course_teacher = course_teacher_list[ctid]
+            while True:
+                ctid = input('请选择课程-老师: ').strip()
+                if ctid.isdigit() and int(ctid) in range(0, len(course_teacher_list)):
+                    break
+                else:
+                    print("\033[1;31;40m选项错误，请重新输入!\033[0m")
+                    continue
+            course_teacher = course_teacher_list[int(ctid)]
             c_obj = Course.get_obj_by_id(course_teacher.course_id)
             t_obj = Teacher.get_obj_by_id(course_teacher.teacher_id)
             classes_list = [(c.name, c.school_id, c.course_teacher_id) for c in Classes.get_all_list()]
@@ -200,10 +223,47 @@ class AdminService(object):
         print(x)
 
     def create_student(self):
-        pass
+        try:
+            name = input('请输入学生名字: ').strip()
+            age = input('请输入学生年龄: ').strip()
+            sex = input('请输入学生性别: ').strip()
+            # 选择班级
+            classes_list = Classes.get_all_list()
+            for index, s in enumerate(classes_list):
+                # 学校名称
+                school_obj = School.get_obj_by_id(s.school_id)
+                print(index, s.name, school_obj.name)
+            while True:
+                cid = input('请选择班级: ').strip()
+                if cid.isdigit() and int(cid) in range(0, len(classes_list)):
+                    break
+                else:
+                    print("\033[1;31;40m选项错误，请重新输入!\033[0m")
+                    continue
+            obj_classes = classes_list[int(cid)]
+            student_list = [s.name for s in Student.get_all_list()]
+            if name in student_list:
+                raise Exception('学生[%s] 班级[%s] 已经存在,不可重复创建' % (name, obj_classes.name))
+            obj_student = Student(name, age, sex, obj_classes.id)
+            obj_student.save()
+            msg = '学生[%s] 年龄[%s] 性别[%s] 班级[%s] 创建成功' % (
+                obj_student.name, obj_student.age, obj_student.sex, obj_classes.name)
+            res_result = ResponseResult(True, msg, "")
+        except Exception as e:
+            res_result = ResponseResult(False, str(e), "")
+        return res_result
 
     def show_student(self):
-        pass
+        # 数据格式化输出
+        title = ["学生姓名", "年龄", "性别", "创建日期", "班级"]
+        x = PrettyTable(title)
+        x.align["学生姓名"] = "l"  # 以第一个字段左对齐
+        x.padding_width = 1
+        for s in Student.get_all_list():
+            # 班级名称
+            classes_obj = Classes.get_obj_by_id(s.classes_id)
+            x.add_row([s.name, s.age, s.sex, s.create_time, classes_obj.name])
+        print(x)
 
     def show(self):
         print(self.msg)
